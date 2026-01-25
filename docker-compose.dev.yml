@@ -1,0 +1,39 @@
+# Docker Compose configuration for development environment
+
+version: "3.8"
+
+services:
+  # Development API service
+  api-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: voice-detection-api-dev
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+    env_file:
+      - .env.development
+    volumes:
+      - .:/app # Mount entire project for hot reload
+      - ./models:/app/models # Mount models directory
+      - ./logs:/app/logs # Mount logs directory
+    restart: unless-stopped
+    networks:
+      - voice-detection-dev-network
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Redis for development
+  redis-dev:
+    image: redis:7-alpine
+    container_name: voice-detection-redis-dev
+    ports:
+      - "6379:6379"
+    networks:
+      - voice-detection-dev-network
+
+networks:
+  voice-detection-dev-network:
+    driver: bridge
