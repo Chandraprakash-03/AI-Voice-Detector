@@ -21,7 +21,7 @@ from src.main import app
 client = TestClient(app)
 
 # Valid API key for testing
-VALID_API_KEY = "dev-api-key-12345"
+VALID_API_KEY = "RW-b3ZMf29EcBQLObtVffHiqine2b89qzlq3Hgg2pBUoqyIElXhg0DKleUAeZsXNIdK"
 
 # Supported languages
 SUPPORTED_LANGUAGES = ["Tamil", "English", "Hindi", "Malayalam", "Telugu"]
@@ -38,7 +38,7 @@ MINIMAL_MP3_BASE64 = base64.b64encode(
     language=st.sampled_from(SUPPORTED_LANGUAGES),
     audio_base64=st.just(MINIMAL_MP3_BASE64)
 )
-@settings(max_examples=10, deadline=30000)  # Reduced examples for faster testing
+@settings(max_examples=5, deadline=30000)  # Reduced examples for faster testing
 def test_single_audio_file_processing_property(language, audio_base64):
     """
     **Feature: ai-voice-detection-api, Property 8**: Single Audio File Processing

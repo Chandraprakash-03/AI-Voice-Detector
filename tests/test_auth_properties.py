@@ -17,7 +17,7 @@ client = TestClient(app)
     api_key=st.one_of(
         st.none(),  # Missing API key
         st.text(alphabet=st.characters(min_codepoint=32, max_codepoint=126), min_size=1, max_size=100),  # ASCII-only API key strings
-        st.just("dev-api-key-12345"),  # Valid API key
+        st.just("RW-b3ZMf29EcBQLObtVffHiqine2b89qzlq3Hgg2pBUoqyIElXhg0DKleUAeZsXNIdK"),  # Valid API key
         st.just(""),  # Empty API key
     ),
     endpoint=st.just("/api/voice-detection"),
@@ -46,7 +46,7 @@ def test_authentication_enforcement_property(api_key, endpoint, method):
         response = client.post(endpoint, headers=headers, json={})
     
     # Check authentication enforcement
-    if api_key == "dev-api-key-12345":
+    if api_key == "RW-b3ZMf29EcBQLObtVffHiqine2b89qzlq3Hgg2pBUoqyIElXhg0DKleUAeZsXNIdK":
         # Valid API key should not result in 401 (may get other errors for invalid request format)
         assert response.status_code != 401, f"Valid API key should not return 401, got {response.status_code}"
         if response.status_code >= 400:
@@ -72,7 +72,7 @@ def test_authentication_enforcement_property(api_key, endpoint, method):
 
 
 @given(
-    valid_key=st.just("dev-api-key-12345"),
+    valid_key=st.just("RW-b3ZMf29EcBQLObtVffHiqine2b89qzlq3Hgg2pBUoqyIElXhg0DKleUAeZsXNIdK"),
     public_endpoint=st.sampled_from(["/", "/health", "/docs", "/redoc", "/openapi.json"])
 )
 def test_public_endpoints_no_auth_required(valid_key, public_endpoint):

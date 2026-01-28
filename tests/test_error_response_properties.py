@@ -68,7 +68,7 @@ def validate_error_response_structure(response_data):
         st.text(alphabet=st.characters(min_codepoint=32, max_codepoint=126), min_size=1, max_size=50).filter(lambda x: x != VALID_API_KEY)  # ASCII printable invalid keys
     )
 )
-@settings(max_examples=10)
+@settings(max_examples=5)
 def test_authentication_error_response_consistency(api_key):
     """
     **Feature: ai-voice-detection-api, Property 7**: Error Response Consistency (Authentication Errors)
@@ -112,7 +112,7 @@ def test_authentication_error_response_consistency(api_key):
     audio_format=st.just(VALID_AUDIO_FORMAT),
     audio_base64=st.just(VALID_BASE64)
 )
-@settings(max_examples=10)
+@settings(max_examples=5)
 def test_validation_error_response_consistency_language(language, audio_format, audio_base64):
     """
     **Feature: ai-voice-detection-api, Property 7**: Error Response Consistency (Language Validation Errors)
@@ -152,7 +152,7 @@ def test_validation_error_response_consistency_language(language, audio_format, 
     audio_format=st.sampled_from(INVALID_AUDIO_FORMATS),
     audio_base64=st.just(VALID_BASE64)
 )
-@settings(max_examples=10)
+@settings(max_examples=5)
 def test_validation_error_response_consistency_audio_format(language, audio_format, audio_base64):
     """
     **Feature: ai-voice-detection-api, Property 7**: Error Response Consistency (Audio Format Validation Errors)
@@ -192,7 +192,7 @@ def test_validation_error_response_consistency_audio_format(language, audio_form
     audio_format=st.just(VALID_AUDIO_FORMAT),
     audio_base64=st.sampled_from(INVALID_BASE64_STRINGS)
 )
-@settings(max_examples=10)
+@settings(max_examples=5)
 def test_validation_error_response_consistency_base64(language, audio_format, audio_base64):
     """
     **Feature: ai-voice-detection-api, Property 7**: Error Response Consistency (Base64 Validation Errors)

@@ -1,0 +1,33 @@
+{
+  "monitoring": {
+    "window_size": 1000,
+    "degradation_threshold": 0.05,
+    "alert_thresholds": {
+      "warning": 0.03,
+      "critical": 0.08
+    },
+    "retention_days": 30
+  },
+  "validation": {
+    "startup_validation": true,
+    "periodic_validation": true,
+    "validation_interval_hours": 24,
+    "min_confidence_threshold": 0.6
+  },
+  "fallback": {
+    "confidence_threshold": 0.7,
+    "memory_limit_mb": 2048,
+    "max_processing_time_seconds": 30,
+    "enable_traditional_features": true
+  },
+  "optimization": {
+    "auto_threshold_optimization": true,
+    "optimization_interval_hours": 168,
+    "min_samples_for_optimization": 100
+  },
+  "registry": {
+    "auto_registration": true,
+    "backup_retention_days": 30,
+    "enable_ab_testing": true
+  }
+}

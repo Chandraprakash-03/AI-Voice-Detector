@@ -85,30 +85,30 @@ class MLConfig(BaseSettings):
     """Machine Learning model configuration."""
     
     # Model paths
-    models_base_path: str = Field(default="models", env="MODELS_BASE_PATH")
+    models_base_path: str = Field(default="MODELS", env="MODELS_BASE_PATH")
     model_cache_size: int = Field(default=5, env="MODEL_CACHE_SIZE")
     
     # Foundation model configuration
     foundation_model: str = Field(default="auto", env="FOUNDATION_MODEL")  # auto, xls-r-300m, hubert-base, wav2vec2-base
-    foundation_models_path: str = Field(default="models/foundation", env="FOUNDATION_MODELS_PATH")
+    foundation_models_path: str = Field(default="MODELS/foundation", env="FOUNDATION_MODELS_PATH")
     
     # Explanation model configuration
     explanation_model: str = Field(default="auto", env="EXPLANATION_MODEL")  # auto, distilgpt2, flan-t5-small, gpt2
-    explanation_models_path: str = Field(default="models/explanation", env="EXPLANATION_MODELS_PATH")
+    explanation_models_path: str = Field(default="MODELS/explanation", env="EXPLANATION_MODELS_PATH")
     explanation_enabled: bool = Field(default=True, env="EXPLANATION_ENABLED")
     
     # Legacy HuBERT configuration (for backward compatibility)
-    hubert_model_path: str = Field(default="models/foundation/hubert-base", env="HUBERT_MODEL_PATH")
-    hubert_config_path: str = Field(default="models/foundation/hubert-base/config.json", env="HUBERT_CONFIG_PATH")
-    hubert_cache_dir: str = Field(default="models/foundation/hubert-base/cache", env="HUBERT_CACHE_DIR")
+    hubert_model_path: str = Field(default="MODELS/foundation/hubert-base", env="HUBERT_MODEL_PATH")
+    hubert_config_path: str = Field(default="MODELS/foundation/hubert-base/config.json", env="HUBERT_CONFIG_PATH")
+    hubert_cache_dir: str = Field(default="MODELS/foundation/hubert-base/cache", env="HUBERT_CACHE_DIR")
     
     # Classifier paths (language-specific)
-    classifiers_path: str = Field(default="models/classifiers", env="CLASSIFIERS_PATH")
-    tamil_model_path: str = Field(default="models/classifiers/tamil_classifier.h5", env="TAMIL_MODEL_PATH")
-    english_model_path: str = Field(default="models/classifiers/english_classifier.h5", env="ENGLISH_MODEL_PATH")
-    hindi_model_path: str = Field(default="models/classifiers/hindi_classifier.h5", env="HINDI_MODEL_PATH")
-    malayalam_model_path: str = Field(default="models/classifiers/malayalam_classifier.h5", env="MALAYALAM_MODEL_PATH")
-    telugu_model_path: str = Field(default="models/classifiers/telugu_classifier.h5", env="TELUGU_MODEL_PATH")
+    classifiers_path: str = Field(default="MODELS/classifiers", env="CLASSIFIERS_PATH")
+    tamil_model_path: str = Field(default="MODELS/classifiers/tamil_classifier.h5", env="TAMIL_MODEL_PATH")
+    english_model_path: str = Field(default="MODELS/classifiers/english_classifier.h5", env="ENGLISH_MODEL_PATH")
+    hindi_model_path: str = Field(default="MODELS/classifiers/hindi_classifier.h5", env="HINDI_MODEL_PATH")
+    malayalam_model_path: str = Field(default="MODELS/classifiers/malayalam_classifier.h5", env="MALAYALAM_MODEL_PATH")
+    telugu_model_path: str = Field(default="MODELS/classifiers/telugu_classifier.h5", env="TELUGU_MODEL_PATH")
     
     # Model inference settings
     confidence_threshold: float = Field(default=0.5, env="CONFIDENCE_THRESHOLD")

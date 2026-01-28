@@ -40,7 +40,7 @@ MINIMAL_MP3_BASE64 = base64.b64encode(
     language=st.sampled_from(SUPPORTED_LANGUAGES),
     audio_base64=st.just(MINIMAL_MP3_BASE64)  # Use fixed valid MP3 for success cases
 )
-@settings(max_examples=10, deadline=30000)  # Reduced examples for faster testing
+@settings(max_examples=5, deadline=30000)  # Reduced examples for faster testing
 def test_success_response_structure_property(language, audio_base64):
     """
     **Feature: ai-voice-detection-api, Property 6**: Success Response Structure

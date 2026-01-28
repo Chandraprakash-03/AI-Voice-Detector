@@ -93,7 +93,7 @@ for exception_type, handler in EXCEPTION_HANDLERS.items():
 
 # Initialize components with configuration
 audio_processor = AudioProcessor(settings)
-detection_engine = DetectionEngine(settings)
+detection_engine = DetectionEngine(settings, foundation_model=settings.ml.foundation_model)
 
 
 @app.post(
@@ -189,11 +189,14 @@ async def detect_voice(request: VoiceDetectionRequest):
             request.audioFormat
         )
         
-        # Perform detection
+        # Perform detection with optional ground truth for monitoring
         logger.info("Running voice detection analysis...")
+        ground_truth = getattr(request, 'groundTruth', None)  # Optional field for monitoring
+        
         detection_result = detection_engine.detect_voice_type(
             audio_features, 
-            request.language
+            request.language,
+            ground_truth=ground_truth
         )
         
         # Generate explanation
@@ -213,7 +216,9 @@ async def detect_voice(request: VoiceDetectionRequest):
         
         logger.info(
             f"Voice detection completed: {detection_result.classification} "
-            f"(confidence: {detection_result.confidence_score:.3f})"
+            f"(confidence: {detection_result.confidence_score:.3f}, "
+            f"processing_time: {detection_result.processing_time:.3f}s, "
+            f"threshold: {getattr(detection_result, 'threshold_used', 'N/A')})"
         )
         
         return response
@@ -311,12 +316,15 @@ async def health_check():
 )
 async def detailed_health_check():
     """
-    Detailed health check endpoint with system information.
+    Detailed health check endpoint with comprehensive system information.
 
     Returns:
-        dict: Detailed status information including configuration and system state
+        dict: Detailed status information including configuration, validation, monitoring, and system state
     """
     try:
+        # Get comprehensive system health status from detection engine
+        system_health = detection_engine.get_system_health_status()
+        
         # Check if models directory exists
         import os
         models_available = os.path.exists(settings.ml.models_base_path)
@@ -324,12 +332,17 @@ async def detailed_health_check():
         # Check supported languages
         supported_languages = ["Tamil", "English", "Hindi", "Malayalam", "Telugu"]
         
+        # Determine overall status based on health score
+        health_score = system_health.get("overall_health", {}).get("score", 0.0)
+        overall_status = "healthy" if health_score >= 0.8 else "degraded" if health_score >= 0.6 else "unhealthy"
+        
         return {
-            "status": "healthy",
+            "status": overall_status,
             "service": "ai-voice-detection-api",
             "version": settings.api.version,
             "environment": settings.environment.value,
             "debug": settings.debug,
+            "health_score": health_score,
             "configuration": {
                 "models_path": settings.ml.models_base_path,
                 "models_available": models_available,
@@ -342,13 +355,166 @@ async def detailed_health_check():
                 "cors_enabled": len(settings.api.cors_origins) > 0,
                 "ssl_enabled": settings.security.ssl_enabled,
                 "security_headers_enabled": settings.security.security_headers_enabled,
-            }
+            },
+            "validation": system_health.get("classifiers", {}),
+            "foundation_model": system_health.get("foundation_model", {}),
+            "monitoring": system_health.get("monitoring", {}),
+            "registry": system_health.get("registry", {}),
+            "fallback": system_health.get("fallback", {}),
+            "thresholds": system_health.get("thresholds", {})
         }
     except Exception as e:
-        logger.error(f"Health check failed: {str(e)}")
+        logger.error(f"Detailed health check failed: {str(e)}")
         return {
             "status": "unhealthy",
             "service": "ai-voice-detection-api",
+            "error": str(e),
+            "health_score": 0.0
+        }
+
+
+@app.get(
+    "/health/monitoring",
+    tags=["health"],
+    summary="Monitoring health check",
+    description="Get monitoring and performance information",
+    responses={
+        200: {
+            "description": "Monitoring information",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "monitoring_active": True,
+                        "total_predictions": 1500,
+                        "accuracy_by_language": {
+                            "English": 0.92,
+                            "Tamil": 0.89
+                        },
+                        "recent_alerts": 0,
+                        "system_health_score": 0.85
+                    }
+                }
+            }
+        }
+    }
+)
+async def monitoring_health_check():
+    """
+    Monitoring-focused health check endpoint.
+
+    Returns:
+        dict: Monitoring status and performance metrics
+    """
+    try:
+        # Get monitoring report for last 24 hours
+        monitoring_report = detection_engine.get_monitoring_report(hours=24)
+        
+        # Get system health status
+        system_health = detection_engine.get_system_health_status()
+        health_score = system_health.get("overall_health", {}).get("score", 0.0)
+        
+        # Extract key monitoring metrics
+        monitoring_summary = system_health.get("monitoring", {})
+        
+        return {
+            "monitoring_active": True,
+            "total_predictions": monitoring_summary.get("total_predictions", 0),
+            "monitoring_duration": monitoring_summary.get("monitoring_duration", "0:00:00"),
+            "monitored_languages": monitoring_summary.get("monitored_languages", []),
+            "current_accuracies": monitoring_summary.get("current_accuracies", {}),
+            "baseline_accuracies": monitoring_summary.get("baseline_accuracies", {}),
+            "recent_alerts": monitoring_summary.get("recent_alerts_count", 0),
+            "system_health_score": health_score,
+            "detailed_report": monitoring_report if "error" not in monitoring_report else None,
+            "error": monitoring_report.get("error") if "error" in monitoring_report else None
+        }
+        
+    except Exception as e:
+        logger.error(f"Monitoring health check failed: {str(e)}")
+        return {
+            "monitoring_active": False,
+            "error": str(e),
+            "system_health_score": 0.0
+        }
+
+
+@app.get(
+    "/health/models",
+    tags=["health"],
+    summary="Model validation health check",
+    description="Get model validation status and registry information",
+    responses={
+        200: {
+            "description": "Model validation information",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "foundation_model_valid": True,
+                        "valid_classifiers": 4,
+                        "total_classifiers": 5,
+                        "registry_models": 5,
+                        "validation_details": {
+                            "English": {"valid": True, "confidence": 0.85},
+                            "Tamil": {"valid": True, "confidence": 0.82}
+                        }
+                    }
+                }
+            }
+        }
+    }
+)
+async def models_health_check():
+    """
+    Model-focused health check endpoint.
+
+    Returns:
+        dict: Model validation status and registry information
+    """
+    try:
+        # Get system health status
+        system_health = detection_engine.get_system_health_status()
+        
+        # Extract model information
+        foundation_model = system_health.get("foundation_model", {})
+        classifiers = system_health.get("classifiers", {})
+        registry = system_health.get("registry", {})
+        
+        # Count valid classifiers
+        valid_classifiers = sum(1 for status in classifiers.values() 
+                               if status.get("classifier_valid", False))
+        total_classifiers = len(classifiers)
+        
+        # Get registry information
+        registry_info = detection_engine.get_model_registry_info()
+        
+        return {
+            "foundation_model": {
+                "name": foundation_model.get("name", "unknown"),
+                "valid": foundation_model.get("valid", False),
+                "config": foundation_model.get("config", {})
+            },
+            "classifiers": {
+                "valid_count": valid_classifiers,
+                "total_count": total_classifiers,
+                "validation_details": classifiers
+            },
+            "registry": {
+                "total_models": registry.get("total_models", 0),
+                "models_by_type": registry.get("models_by_type", {}),
+                "models_by_status": registry.get("models_by_status", {}),
+                "models_info": registry_info.get("models", {}) if "error" not in registry_info else None
+            },
+            "thresholds": system_health.get("thresholds", {}),
+            "overall_model_health": "healthy" if valid_classifiers == total_classifiers and foundation_model.get("valid", False) else "degraded"
+        }
+        
+    except Exception as e:
+        logger.error(f"Models health check failed: {str(e)}")
+        return {
+            "foundation_model": {"valid": False},
+            "classifiers": {"valid_count": 0, "total_count": 0},
+            "registry": {"total_models": 0},
+            "overall_model_health": "unhealthy",
             "error": str(e)
         }
 

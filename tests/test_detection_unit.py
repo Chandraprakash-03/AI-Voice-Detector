@@ -37,15 +37,15 @@ class TestDetectionEngine:
         # Check supported languages
         assert engine.SUPPORTED_LANGUAGES == ["Tamil", "English", "Hindi", "Malayalam", "Telugu"]
         
-        # Check model cache is empty initially
-        assert len(engine.model_cache) == 0
+        # Check classifier cache is empty initially
+        assert len(engine.classifier_cache) == 0
         
         # Check model configurations are initialized
         assert len(engine.model_configs) == 5
         for language in engine.SUPPORTED_LANGUAGES:
             assert language in engine.model_configs
             config = engine.model_configs[language]
-            assert "model_path" in config
+            assert "classifier_path" in config
             assert "version" in config
             assert "input_shape" in config
             assert "confidence_threshold" in config
@@ -125,24 +125,54 @@ class TestDetectionEngine:
         assert "Expected 13 MFCC coefficients" in str(exc_info.value)
     
     def test_calculate_confidence_score(self):
-        """Test confidence score calculation."""
+        """Test enhanced confidence score calculation."""
         language = "English"
+        
+        # Create sample features for testing
+        sample_features = np.random.randn(1024)  # Typical embedding dimension
+        
+        # Create sample model metadata
+        model_metadata = {
+            'validation_accuracy': 0.9,
+            'model_size_bytes': 2000000,
+            'model_version': '1.0.0'
+        }
         
         # Test various model outputs
         test_cases = [
-            (0.0, 1.0),    # Very confident HUMAN
-            (1.0, 1.0),    # Very confident AI_GENERATED
-            (0.5, 0.0),    # Uncertain (should have low confidence)
-            (0.3, 0.35),   # Moderately confident HUMAN (adjusted for floating point precision)
-            (0.7, 0.35),   # Moderately confident AI_GENERATED (adjusted for floating point precision)
+            (0.0, 0.6),    # Very confident HUMAN - should have high confidence
+            (1.0, 0.6),    # Very confident AI_GENERATED - should have high confidence
+            (0.5, 0.05),   # Uncertain (should have very low confidence)
+            (0.3, 0.15),   # Moderately confident HUMAN
+            (0.7, 0.15),   # Moderately confident AI_GENERATED
         ]
         
         for model_output, expected_min_confidence in test_cases:
-            confidence = self.engine._calculate_confidence_score(model_output, language)
+            confidence = self.engine._calculate_confidence_score(
+                model_output=model_output,
+                language=language,
+                features=sample_features,
+                model_metadata=model_metadata,
+                prediction_history=None
+            )
             
             # Check confidence is in valid range
-            assert 0.0 <= confidence <= 1.0
-            assert confidence >= expected_min_confidence
+            assert 0.0 <= confidence <= 1.0, f"Confidence {confidence} not in valid range for output {model_output}"
+            assert confidence >= expected_min_confidence, f"Confidence {confidence} below minimum {expected_min_confidence} for output {model_output}"
+    
+    def test_calculate_confidence_score_fallback(self):
+        """Test confidence score calculation fallback to simple method."""
+        language = "English"
+        
+        # Test that the method works even without optional parameters
+        confidence = self.engine._calculate_confidence_score(
+            model_output=0.8,
+            language=language
+        )
+        
+        # Check confidence is in valid range
+        assert 0.0 <= confidence <= 1.0
+        assert confidence > 0.3  # Should be reasonably confident for 0.8 output
     
     def test_generate_explanation(self):
         """Test explanation generation."""

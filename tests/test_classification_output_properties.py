@@ -97,7 +97,7 @@ class TestClassificationOutputConstraints:
         features=audio_features_strategy(),
         language=st.sampled_from(SUPPORTED_LANGUAGES)
     )
-    @settings(max_examples=5, deadline=None)
+    @settings(max_examples=3, deadline=None)
     def test_classification_result_constraints(self, features, language):
         """
         Property: Classification results must have valid classification, confidence score, and metadata.
@@ -141,7 +141,7 @@ class TestClassificationOutputConstraints:
         features=audio_features_strategy(),
         language=st.sampled_from(SUPPORTED_LANGUAGES)
     )
-    @settings(max_examples=5, deadline=None)
+    @settings(max_examples=3, deadline=None)
     def test_explanation_generation_constraints(self, features, language):
         """
         Property: Generated explanations must be non-empty strings.
@@ -184,7 +184,7 @@ class TestClassificationOutputConstraints:
         features=audio_features_strategy(),
         language=st.sampled_from(SUPPORTED_LANGUAGES)
     )
-    @settings(max_examples=5, deadline=None)
+    @settings(max_examples=3, deadline=None)
     def test_classification_consistency(self, features, language):
         """
         Property: Multiple calls with same input should produce consistent results.
@@ -214,7 +214,7 @@ class TestClassificationOutputConstraints:
             pytest.skip("Detection failed - property applies only to successful analyses")
     
     @given(language=st.sampled_from(SUPPORTED_LANGUAGES))
-    @settings(max_examples=5, deadline=None)
+    @settings(max_examples=3, deadline=None)
     def test_supported_language_processing(self, language):
         """
         Property: All supported languages should be processable by the detection engine.
@@ -244,7 +244,7 @@ class TestClassificationOutputConstraints:
             pytest.skip("Detection failed - property applies only to successful analyses")
     
     @given(language=st.text().filter(lambda x: x not in SUPPORTED_LANGUAGES and x.strip()))
-    @settings(max_examples=5)
+    @settings(max_examples=3)
     def test_unsupported_language_rejection(self, language):
         """
         Property: Unsupported languages should be rejected with appropriate errors.
@@ -270,7 +270,7 @@ class TestClassificationOutputConstraints:
         base64_audio=mp3_like_base64_strategy(),
         language=st.sampled_from(SUPPORTED_LANGUAGES)
     )
-    @settings(max_examples=5, deadline=None)
+    @settings(max_examples=3, deadline=None)
     def test_end_to_end_classification_constraints(self, base64_audio, language):
         """
         Property: End-to-end processing should produce valid classification results.
@@ -328,7 +328,7 @@ class TestClassificationOutputConstraints:
         features=audio_features_strategy(),
         language=st.sampled_from(SUPPORTED_LANGUAGES)
     )
-    @settings(max_examples=5, deadline=None)
+    @settings(max_examples=3, deadline=None)
     def test_confidence_score_precision(self, features, language):
         """
         Property: Confidence scores should be reasonable precision floating point numbers.

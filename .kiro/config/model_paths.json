@@ -1,0 +1,22 @@
+{
+  "foundation_models": {
+    "xls-r-300m": "foundation/xls-r-300m",
+    "hubert-base": "foundation/hubert-base",
+    "wav2vec2-base": "foundation/wav2vec2-base"
+  },
+  "classifiers": {
+    "english": "classifiers/english_classifier.h5",
+    "tamil": "classifiers/tamil_classifier.h5",
+    "hindi": "classifiers/hindi_classifier.h5",
+    "malayalam": "classifiers/malayalam_classifier.h5",
+    "telugu": "classifiers/telugu_classifier.h5"
+  },
+  "explanation_models": {
+    "distilgpt2": "explanation/distilgpt2",
+    "flan-t5-small": "explanation/flan-t5-small"
+  },
+  "preprocessing_models": {
+    "feature_scalers": "preprocessing/feature_scalers"
+  },
+  "base_path": "models"
+}
