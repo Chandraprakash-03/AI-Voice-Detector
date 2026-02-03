@@ -270,7 +270,7 @@ Benefits:
         results["explanation_models"] = self.download_explanation_models()
         
         # Create placeholders
-        results["dummy_classifiers"] = self.create_dummy_classifiers()
+        # results["dummy_classifiers"] = self.create_dummy_classifiers()
         results["model_info"] = self.create_model_info()
         
         return results

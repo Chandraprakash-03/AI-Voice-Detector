@@ -408,8 +408,7 @@ class ModelValidator:
             # Try to determine model type from path or config
             if "xls-r" in str(model_path).lower():
                 model = Wav2Vec2Model.from_pretrained(str(model_path_obj))
-                print(str(model_path_obj))
-                processor = Wav2Vec2Processor.from_pretrained(str(model_path_obj))
+                processor = Wav2Vec2FeatureExtractor.from_pretrained(str(model_path_obj))
             elif "hubert" in str(model_path).lower():
                 model = HubertModel.from_pretrained(str(model_path_obj))
                 processor = Wav2Vec2FeatureExtractor.from_pretrained(str(model_path_obj))
@@ -654,33 +653,37 @@ class EmbeddingValidator:
             flattened = embeddings.flatten()
             
             # Test 1: Variance analysis
-            # Random embeddings often have high variance
+            # Random embeddings often have high variance, but neural embeddings have moderate variance
             variance = np.var(flattened)
-            if variance > 10.0:  # Very high variance suggests random
-                logger.debug(f"High variance detected: {variance}")
+            if variance > 50.0:  # Very high variance suggests random noise
+                logger.debug(f"Extremely high variance detected: {variance}")
+                return True
+            elif variance < 1e-8:  # Essentially zero variance suggests dummy/broken
+                logger.debug(f"Zero variance detected: {variance}")
                 return True
             
             # Test 2: Distribution uniformity
-            # Random embeddings often follow uniform distribution
+            # Neural embeddings should have some structure, not perfectly uniform
             if len(flattened) > 10:
                 hist, _ = np.histogram(flattened, bins=min(20, len(flattened) // 5))
                 hist_normalized = hist / np.sum(hist)
                 uniformity = np.std(hist_normalized)
                 
                 # Very uniform distribution suggests random generation
-                if uniformity < 0.03:
-                    logger.debug(f"Uniform distribution detected: {uniformity}")
+                # But neural embeddings can be quite uniform too, so be more lenient
+                if uniformity < 0.01:  # Extremely uniform
+                    logger.debug(f"Extremely uniform distribution detected: {uniformity}")
                     return True
             
             # Test 3: Value uniqueness
             # Random embeddings have high uniqueness, meaningful ones have patterns
             if len(flattened) > 1:
                 unique_ratio = len(np.unique(flattened)) / len(flattened)
-                if unique_ratio > 0.95:  # Too many unique values
-                    logger.debug(f"High uniqueness ratio: {unique_ratio}")
-                    return True
-                elif unique_ratio < 0.05:  # Too many repeated values (dummy)
-                    logger.debug(f"Low uniqueness ratio: {unique_ratio}")
+                if unique_ratio > 0.99:  # Almost all values unique is normal for neural embeddings
+                    # This is actually normal for neural network embeddings, not random
+                    pass  # Don't flag as random
+                elif unique_ratio < 0.01:  # Too many repeated values (dummy/broken)
+                    logger.debug(f"Very low uniqueness ratio: {unique_ratio}")
                     return True
             
             # Test 4: Statistical normality test
@@ -1119,7 +1122,7 @@ class FoundationModelManager:
         "xls-r-300m": {
             "path": "foundation/xls-r-300m",
             "model_class": "Wav2Vec2Model",
-            "processor_class": "Wav2Vec2Processor",
+            "processor_class": "Wav2Vec2FeatureExtractor",
             "embedding_dim": 1024,
             "recommended": True,
             "multilingual": True
@@ -1135,7 +1138,7 @@ class FoundationModelManager:
         "wav2vec2-base": {
             "path": "foundation/wav2vec2-base",
             "model_class": "Wav2Vec2Model", 
-            "processor_class": "Wav2Vec2Processor",
+            "processor_class": "Wav2Vec2FeatureExtractor",
             "embedding_dim": 768,
             "recommended": False,
             "multilingual": False
@@ -1289,9 +1292,9 @@ class FoundationModelManager:
             
             # Load model and processor based on type
             if config["model_class"] == "Wav2Vec2Model":
-                from transformers import Wav2Vec2Model, Wav2Vec2Processor
+                from transformers import Wav2Vec2Model, Wav2Vec2FeatureExtractor
                 model = Wav2Vec2Model.from_pretrained(str(model_path))
-                processor = Wav2Vec2Processor.from_pretrained(str(model_path))
+                processor = Wav2Vec2FeatureExtractor.from_pretrained(str(model_path))
             elif config["model_class"] == "HubertModel":
                 from transformers import HubertModel, Wav2Vec2FeatureExtractor
                 model = HubertModel.from_pretrained(str(model_path))

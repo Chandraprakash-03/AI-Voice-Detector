@@ -80,7 +80,7 @@ class DetectionEngine:
         "xls-r-300m": {
             "path": "foundation/xls-r-300m",
             "model_class": "Wav2Vec2Model",
-            "processor_class": "Wav2Vec2Processor",
+            "processor_class": "Wav2Vec2FeatureExtractor",
             "embedding_dim": 1024,
             "recommended": True,
             "multilingual": True
@@ -96,7 +96,7 @@ class DetectionEngine:
         "wav2vec2-base": {
             "path": "foundation/wav2vec2-base",
             "model_class": "Wav2Vec2Model", 
-            "processor_class": "Wav2Vec2Processor",
+            "processor_class": "Wav2Vec2FeatureExtractor",
             "embedding_dim": 768,
             "recommended": False,
             "multilingual": False
